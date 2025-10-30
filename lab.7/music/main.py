@@ -14,7 +14,7 @@ songs = []
 for file in os.listdir(music_folder):
     if file.endswith(".mp3"):
         songs.append(music_folder + "/" + file)
-
+ 
 if len(songs) == 0:
     print("No songs found in the 'musics' folder.")
     sys.exit()
