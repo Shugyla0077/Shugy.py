@@ -89,7 +89,7 @@ all_sprites.add(C1)
 # INC_SPEED = pygame.USEREVENT + 1
 # pygame.time.set_timer(INC_SPEED, 1000)
 
-pygame.mixer.Sound("Shugy.py/lab.8/songs/background.wav").play(1000)
+pygame.mixer.Sound("Shugy.py/lab.8/sounds/background.wav").play(1000)
 
 #Game loop
 running = True
@@ -105,7 +105,7 @@ while running:
     screen.blit(background, (0,b_y))
     screen.blit(background, (0,b_y-600))
     scores = font_small.render(str(SCORE), True, (0,0,0))
-    screen.blit(scores, (10,10))
+    screen.blit(scores, (370,10))
 
     #Moves and Re-draws all Sprites
     for entity in all_sprites:
@@ -114,7 +114,7 @@ while running:
 
     #To be run if collision occurs between Player and Enemy
         if pygame.sprite.spritecollideany(P1, enemies):
-          pygame.mixer.Sound('Shugy.py/lab.8/songs/crash.wav').play()
+          pygame.mixer.Sound('Shugy.py/lab.8/sounds/crash.wav').play()
           time.sleep(0.5)
                     
           screen.fill(pygame.Color('red'))
