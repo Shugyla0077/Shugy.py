@@ -8,4 +8,3 @@ b = 5
 
 for square in squares(a, b):
     print(square)
-

@@ -1,9 +1,8 @@
-def countdown (n):
-    while n>=0:
-        yield n
-        n-=1
+import math
 
-n=5
+r = float(input("Радиус сферанын"))
 
-for  num in countdown (n):
-    print (num)
+
+volume = (4/3) * math.pi * r**3
+
+print(f" көлемі:{volume}")

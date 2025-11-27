@@ -1,1 +1,4 @@
-print("Hello, World!")
+
+
+thisdict["model"]="niva"
+print(thisdict)

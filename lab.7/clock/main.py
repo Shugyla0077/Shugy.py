@@ -32,3 +32,5 @@ while True:
     blitRotateCenter(sc, leftHand, (x,y), -second) 
     blitRotateCenter(sc, rightHand, (x,y), -minute)
     pygame.display.update()
+
+    

@@ -1,134 +1,147 @@
-import pygame, random, time
+import pygame, sys, random, time
+from pygame.locals import *
+
+# Инициализация Pygame
 pygame.init()
-FPS = pygame.time.Clock()
 
-#Screen information
-W, H = 400, 600
-SPEED = 5
-coin_y = 0
+# --- Константы ---
+SCREEN_WIDTH = 400
+SCREEN_HEIGHT = 600
+SPEED = 5  # Начальная скорость врагов
 SCORE = 0
-screen = pygame.display.set_mode((W, H))
-screen.fill((255, 255, 255))
-pygame.display.set_caption("Game") 
+COINS = 0
+FPS = 60
 
-#Fonts
-font = pygame.font.SysFont("Verdana", 60)
-font_small = pygame.font.SysFont("Verdana", 20)
-game_over = font.render("Game Over", True, (0,0,0))
+# --- Цвета ---
+BLACK = (0, 0, 0)
+WHITE = (255, 255, 255)
+YELLOW = (255, 255, 0)
 
-#Background
+# --- Шрифт ---
+font = pygame.font.SysFont("Verdana", 20)
+game_over_text = font.render("Game Over", True, BLACK)
 
-background = pygame.image.load("Shugy.py/lab.8/images/Снимок экрана 2025-11-06 в 19.54.33.png")
+# --- Окно ---
+DISPLAYSURF = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+pygame.display.set_caption("Car Game")
 
-#Enemy
-class Enemy(pygame.sprite.Sprite):
-      def __init__(self):
-        super().__init__() 
-        self.image = pygame.image.load("Shugy.py/lab.8/images/Enemy.png")
-        self.rect = self.image.get_rect()
-        self.rect.center = (random.randint(40, W-40), 0)  
+# --- Звук ---
+pygame.mixer.music.load("Shugy.py/lab.8/sounds/background.wav")
+pygame.mixer.music.play(-1)
+crash_sound = pygame.mixer.Sound("Shugy.py/lab.8/sounds/crash.wav")
 
-      def move(self):
-        self.rect.move_ip(0,SPEED)
-        if (self.rect.top > 600):
-            self.rect.top = 0
-            self.rect.center = (random.randint(40, W - 40), 0)
+# --- Фон ---
+background = pygame.image.load("Shugy.py/lab.8/images/AnimatedStreet.png")
 
-#Coins
-class Coin(pygame.sprite.Sprite):
-    def __init__(self):
-        super().__init__()
-        global coin_y
-        self.image = pygame.image.load("Shugy.py/lab.8/images/coin.png")
-        self.rect = self.image.get_rect()
-        self.rect.center = (random.randint(40, W - 40), 0)
-
-    def move(self):
-        global SCORE
-        self.rect.move_ip(0, SPEED)
-        if self.rect.bottom > 700 or pygame.sprite.spritecollideany(P1, coins):
-            if pygame.sprite.spritecollideany(P1, coins):
-                SCORE += 1
-            self.rect.top = 0
-            self.rect.center = (random.randint(40, W-40),0)
-
-#PLayer
+# --- Игрок ---
 class Player(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
-        self.image =  pygame.image.load("Shugy.py/lab.8/images/Player.png")
+        self.image = pygame.image.load("Shugy.py/lab.8/images/Player.png")
         self.rect = self.image.get_rect()
-        self.rect.center = (160, 520)
-    
+        self.rect.center = (165, 524)
+
     def move(self):
         keys = pygame.key.get_pressed()
-        if self.rect.left > 0:
-            if keys[pygame.K_LEFT]:
-                self.rect.move_ip(-5, 0)
-        if self.rect.right < W:
-            if keys[pygame.K_RIGHT]:
-                self.rect.move_ip(5, 0)
+        if keys[K_LEFT] and self.rect.left > 0:
+            self.rect.x -= 5
+        if keys[K_RIGHT] and self.rect.right < SCREEN_WIDTH:
+            self.rect.x += 5
 
-#Setting up Sprites
-E1 = Enemy()
-P1 = Player()
-C1 = Coin()
-b_y=0
+# --- Враг ---
+class Enemy(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+        self.image = pygame.image.load("Shugy.py/lab.8/images/Enemy.png")
+        self.rect = self.image.get_rect()
+        self.rect.center = (random.randint(40, SCREEN_WIDTH - 40), 0)
 
-#Creating Sprites Groups
-enemies = pygame.sprite.Group()
-coins = pygame.sprite.Group()
-coins.add(C1)
-enemies.add(E1)
+    def move(self):
+        global SPEED
+        self.rect.y += SPEED
+        if self.rect.top > SCREEN_HEIGHT:
+            self.rect.top = 0
+            self.rect.center = (random.randint(40, SCREEN_WIDTH - 40), 0)
+
+# --- Монеты ---
+class Coin(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+        self.size = random.randint(15, 30)  
+        self.image = pygame.Surface((self.size, self.size), pygame.SRCALPHA)
+        pygame.draw.circle(self.image, YELLOW, (self.size // 2, self.size // 2), self.size // 2)
+        self.rect = self.image.get_rect()
+        self.rect.center = (random.randint(40, SCREEN_WIDTH - 40), random.randint(-1500, -100))
+
+    def move(self):
+        self.rect.y += SPEED
+        if self.rect.top > SCREEN_HEIGHT:
+            self.rect.top = random.randint(-1500, -100)
+            self.rect.center = (random.randint(40, SCREEN_WIDTH - 40), self.rect.top)
+
+# --- Объекты игры ---
+player = Player()
+enemy = Enemy()
+coin = Coin()
+
 all_sprites = pygame.sprite.Group()
-all_sprites.add(E1)
-all_sprites.add(P1)
-all_sprites.add(C1)
+all_sprites.add(player, enemy, coin)
 
-#Adding a new User event
-# INC_SPEED = pygame.USEREVENT + 1
-# pygame.time.set_timer(INC_SPEED, 1000)
+enemies = pygame.sprite.Group()
+enemies.add(enemy)
 
-pygame.mixer.Sound("Shugy.py/lab.8/sounds/background.wav").play(1000)
+coins = pygame.sprite.Group()
+coins.add(coin)
 
-#Game loop
-running = True
-while running:
+# --- Событие увеличения скорости ---
+pygame.time.set_timer(pygame.USEREVENT + 1, 1000)
+
+# --- Игровой цикл ---
+clock = pygame.time.Clock()
+
+while True:
     for event in pygame.event.get():
-        # if event.type == INC_SPEED:
-        #     SPEED +=0.5
-
-        if event.type == pygame.QUIT:
-            running = False
+        if event.type == QUIT:
             pygame.quit()
+            sys.exit()
     
-    screen.blit(background, (0,b_y))
-    screen.blit(background, (0,b_y-600))
-    scores = font_small.render(str(SCORE), True, (0,0,0))
-    screen.blit(scores, (370,10))
+    # Отрисовка фона
+    DISPLAYSURF.blit(background, (0, 0))
 
-    #Moves and Re-draws all Sprites
+    # Движение и отрисовка всех объектов
+    player.move()
     for entity in all_sprites:
-        screen.blit(entity.image, entity.rect)
         entity.move()
+        DISPLAYSURF.blit(entity.image, entity.rect)
 
-    #To be run if collision occurs between Player and Enemy
-        if pygame.sprite.spritecollideany(P1, enemies):
-          pygame.mixer.Sound('Shugy.py/lab.8/sounds/crash.wav').play()
-          time.sleep(0.5)
-                    
-          screen.fill(pygame.Color('red'))
-          screen.blit(game_over, (30,250))
-           
-          pygame.display.update()
-          for entity in all_sprites:
-                entity.kill() 
-          time.sleep(2)
-          pygame.quit()
-          exit()
-    b_y+=5
+    # Обработка столкновений
+    if pygame.sprite.spritecollideany(player, enemies):
+        crash_sound.play()
+        pygame.mixer.music.stop()
+        DISPLAYSURF.fill(RED)
+        DISPLAYSURF.blit(game_over_text, (150, 250))
+        pygame.display.update()
+        time.sleep(3)
+        pygame.quit()
+        sys.exit()
 
-    if b_y > 600:
-        b_y = 0
-    pygame.display.flip()
-    FPS.tick(60)
+    # Сбор монет
+    collected_coins = pygame.sprite.spritecollide(player, coins, False)
+    for collected in collected_coins:
+        COINS += 1
+        collected.rect.top = random.randint(-1500, -100)
+        collected.rect.center = (random.randint(40, SCREEN_WIDTH - 40), collected.rect.top)
+
+    # Увеличение скорости врагов после 5 монет
+    if COINS >= 5:
+        SPEED += 1
+        COINS = 0  # Сбросить количество монет
+
+    # Отображение счёта
+    score_text = font.render(f"Score: {SCORE}", True, BLACK)
+    coins_text = font.render(f"Coins: {COINS}", True, BLACK)
+    DISPLAYSURF.blit(score_text, (10, 10))
+    DISPLAYSURF.blit(coins_text, (SCREEN_WIDTH - 120, 10))
+
+    pygame.display.update()
+    clock.tick(FPS)
